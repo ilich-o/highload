@@ -4,6 +4,8 @@ namespace App\Repository;
 
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\DBAL\Exception;
+use Doctrine\DBAL\ParameterType;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bridge\Doctrine\Security\User\UserLoaderInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -18,32 +20,24 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         parent::__construct($registry, User::class);
     }
 
+    /**
+     * @throws Exception
+     */
+    public function searchByFirstLastName(string $firstName, string $lastName, int $limit = 500, int $offset = 0): array
+    {
+        $sql = 'SELECT * FROM user WHERE first_name LIKE :firstName AND second_name LIKE :lastName ORDER BY id LIMIT :limit OFFSET :offset';
 
+        $stmt = $this->getEntityManager()->getConnection()->prepare($sql);
+        $stmt->bindValue('limit', $limit, ParameterType::INTEGER);
+        $stmt->bindValue('offset', $offset, ParameterType::INTEGER);
+        $stmt->bindValue('firstName', "$firstName%");
+        $stmt->bindValue('lastName', "$lastName%");
 
-    //    /**
-    //     * @return User[] Returns an array of User objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('u')
-    //            ->andWhere('u.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('u.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+        $result = $stmt->executeQuery();
 
-    //    public function findOneBySomeField($value): ?User
-    //    {
-    //        return $this->createQueryBuilder('u')
-    //            ->andWhere('u.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+        return $result->fetchAllAssociative();
+    }
+
     public function loadUserByIdentifier(string $identifier): ?UserInterface
     {
         return null;
