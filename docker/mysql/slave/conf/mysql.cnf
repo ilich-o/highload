@@ -1,0 +1,7 @@
+[mysqld]
+server-id=2
+
+relay-log = relay-bin
+relay-log-info-file = relay-log.info
+relay-log-index = relay-log.index
+replicate-do-db = highload

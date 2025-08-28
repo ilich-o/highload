@@ -11,11 +11,47 @@ services:
     ports:
       - '4306:3306'
     volumes:
-      - ./data:/var/lib/mysql
+      - ./data/master:/var/lib/mysql
+      - ./docker/mysql/master/conf/mysql.cnf:/etc/mysql/conf.d/replica.cnf
+      - ./docker/mysql/master/conf/init.sql:/docker-entrypoint-initdb.d/start.sql
+  database-slave1:
+    image: mysql:8.0
+    container_name: database-slave1
+    command: --default-authentication-plugin=mysql_native_password --max_allowed_packet=256M
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: highload
+      MYSQL_USER: highload
+      MYSQL_PASSWORD: highload
+#    build:
+#      context: ./docker/mysql/slave
+    ports:
+      - '4307:3306'
+    volumes:
+      - ./data/slave1:/var/lib/mysql
+      - ./docker/mysql/slave/conf/mysql.cnf:/etc/mysql/conf.d/replica.cnf
+      - ./docker/mysql/slave/conf/init.sql:/docker-entrypoint-initdb.d/start.sql
+  database-slave2:
+    image: mysql:8.0
+    container_name: database-slave2
+    command: --default-authentication-plugin=mysql_native_password --max_allowed_packet=256M
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: highload
+      MYSQL_USER: highload
+      MYSQL_PASSWORD: highload
+    ports:
+      - '4308:3306'
+    volumes:
+      - ./data/slave2:/var/lib/mysql
+      - ./docker/mysql/slave/conf/mysql.cnf:/etc/mysql/conf.d/replica.cnf
+      - ./docker/mysql/slave/conf/init.sql:/docker-entrypoint-initdb.d/start.sql
   php:
     container_name: php
     build:
       context: ./docker/php
+      args:
+        USER: ${USER:-ilich}
     ports:
       - '9000:9000'
     volumes:

@@ -1,0 +1,8 @@
+CHANGE MASTER TO
+    MASTER_HOST='database',
+    MASTER_USER='replica',
+    MASTER_PASSWORD='replica',
+    SOURCE_LOG_FILE='mysql-bin.000003',
+    MASTER_LOG_POS=157,
+    MASTER_PORT=3306;
+START SLAVE;
